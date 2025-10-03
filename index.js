@@ -20,7 +20,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
  // serve images
 // DB Connection
 mongoose
-  .connect(process.env.MONGO_URI || 'mongodb+srv://vishnup:vishnu8086@cluster0.norh57t.mongodb.net/', {
+  .connect(process.env.MONGO_URI || 'mongodb+srv://rjatlasdigitalai:1qaz2wsx@cluster0.sxanvzr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
