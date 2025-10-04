@@ -80,7 +80,7 @@ exports.createTask = async (req, res) => {
 
      // ✅ WhatsApp Notification via Waichat
 try {
-  const waichatUrl = "https://waichat.com/api/send";
+  const waichatUrl = "https://waichat.com/api/send_group";
 
   // Add country code for India
   let contactNumber = user.contactNumber;
@@ -96,8 +96,8 @@ try {
     }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n⚡ Status: ${
       status || "pending"
     }\n🏢 Company: ${company.name}\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard.`,
-    instance_id: "66D53FFC467CF", // ✅ Your Instance ID
-    access_token: "651665c15e234", // ✅ Your Access Token
+    instance_id: "68E0E2878A990", // ✅ Your Instance ID
+    access_token: "68de6bd371bd8", // ✅ Your Access Token
   };
 
   const response = await axios.post(waichatUrl, waichatPayload, {
@@ -433,7 +433,7 @@ exports.updateTask = async (req, res) => {
     // ✅ If status is updated, send WhatsApp notification
     if (status && status !== oldStatus && task.assignedTo?.contactNumber) {
       try {
-        const waichatUrl = "https://waichat.com/api/send";
+        const waichatUrl = "https://waichat.com/api/send_group";
 
         // Add country code (India: 91)
         let contactNumber = task.assignedTo.contactNumber;
@@ -447,8 +447,8 @@ exports.updateTask = async (req, res) => {
           message: `⚡ Task Status Updated!\n\n📝 Task: ${
             task.taskName
           }\n📅 Updated At: ${new Date().toLocaleString()}\n✅ New Status: ${status}\n\nPlease check your dashboard for details.`,
-          instance_id: "66D53FFC467CF", // ✅ Your Instance ID
-          access_token: "651665c15e234", // ✅ Your Access Token
+          instance_id: "68E0E2878A990", // ✅ Your Instance ID
+          access_token: "68de6bd371bd8", // ✅ Your Access Token
         };
 
         const response = await axios.post(waichatUrl, waichatPayload, {
