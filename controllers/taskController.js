@@ -80,7 +80,7 @@ exports.createTask = async (req, res) => {
 
      // ✅ WhatsApp Notification via Waichat
 try {
-  const waichatUrl = "https://waichat.com/api/send";
+  const waichatUrl = "https://waichat.com/api/send_group";
 
   // Add country code for India
   let contactNumber = user.contactNumber;
@@ -433,7 +433,7 @@ exports.updateTask = async (req, res) => {
     // ✅ If status is updated, send WhatsApp notification
     if (status && status !== oldStatus && task.assignedTo?.contactNumber) {
       try {
-        const waichatUrl = "https://waichat.com/api/send";
+        const waichatUrl = "https://waichat.com/api/send_group";
 
         // Add country code (India: 91)
         let contactNumber = task.assignedTo.contactNumber;
