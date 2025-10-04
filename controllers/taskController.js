@@ -95,9 +95,9 @@ try {
       description || "No description"
     }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n⚡ Status: ${
       status || "pending"
-    }\n🏢 Company: ${company.name}\n\n🔗 View Task: https://taskmanagement-15t2.vercel.app/\n\nPlease check your dashboard.`,
-    instance_id: "66D53FFC467CF", // ✅ Your Instance ID
-    access_token: "651665c15e234", // ✅ Your Access Token
+    }\n🏢 Company: ${company.name}\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard.`,
+    instance_id: "68E0E2878A990", // ✅ Your Instance ID
+    access_token: "68de6bd371bd8", // ✅ Your Access Token
   };
 
   const response = await axios.post(waichatUrl, waichatPayload, {
@@ -447,8 +447,8 @@ exports.updateTask = async (req, res) => {
           message: `⚡ Task Status Updated!\n\n📝 Task: ${
             task.taskName
           }\n📅 Updated At: ${new Date().toLocaleString()}\n✅ New Status: ${status}\n\nPlease check your dashboard for details.`,
-          instance_id: "66D53FFC467CF", // ✅ Your Instance ID
-          access_token: "651665c15e234", // ✅ Your Access Token
+          instance_id: "68E0E2878A990", // ✅ Your Instance ID
+          access_token: "68de6bd371bd8", // ✅ Your Access Token
         };
 
         const response = await axios.post(waichatUrl, waichatPayload, {
