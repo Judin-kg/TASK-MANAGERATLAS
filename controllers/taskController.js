@@ -95,7 +95,7 @@ try {
       description || "No description"
     }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n⚡ Status: ${
       status || "pending"
-    }\n🏢 Company: ${company.name}\n\n🔗 View Task: https://taskmanagement-15t2.vercel.app/\n\nPlease check your dashboard.`,
+    }\n🏢 Company: ${company.name}\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard.`,
     instance_id: "66D53FFC467CF", // ✅ Your Instance ID
     access_token: "651665c15e234", // ✅ Your Access Token
   };
