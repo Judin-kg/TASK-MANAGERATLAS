@@ -236,3 +236,23 @@ exports.resetAssistantManagerPassword = async (req, res) => {
   }
 };
 
+// Update assistant manager
+exports.updateAssistantManager = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedAssistant = await Staff.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    }).populate("managerId", "name");
+
+    if (!updatedAssistant) {
+      return res.status(404).json({ error: "Assistant Manager not found" });
+    }
+
+    res.json(updatedAssistant);
+  } catch (err) {
+    console.error("Error updating assistant manager:", err);
+    res.status(500).json({ error: "Failed to update assistant manager" });
+  }
+};
+

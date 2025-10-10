@@ -38,20 +38,44 @@ exports.getCompanyById = async (req, res) => {
 };
 
 // Update company
+// exports.updateCompany = async (req, res) => {
+//   try {
+//     const { name } = req.body;
+//     const company = await Company.findByIdAndUpdate(
+//       req.params.id,
+//       { name },
+//       { new: true }
+//     );
+//     if (!company) return res.status(404).json({ message: "Company not found" });
+//     res.json(company);
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// PUT /api/companies/:id
 exports.updateCompany = async (req, res) => {
   try {
+    const { id } = req.params;
     const { name } = req.body;
-    const company = await Company.findByIdAndUpdate(
-      req.params.id,
+
+    const updatedCompany = await Company.findByIdAndUpdate(
+      id,
       { name },
       { new: true }
     );
-    if (!company) return res.status(404).json({ message: "Company not found" });
-    res.json(company);
+
+    if (!updatedCompany) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    res.json(updatedCompany);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Error updating company:", err);
+    res.status(500).json({ message: "Error updating company", error: err.message });
   }
 };
+
 
 // Delete company
 exports.deleteCompany = async (req, res) => {

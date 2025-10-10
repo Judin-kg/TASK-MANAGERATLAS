@@ -302,22 +302,6 @@ exports.getTaskReports = async (req, res) => {
 // };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ✅ Get all tasks
 exports.getTasks = async (req, res) => {
   try {
@@ -359,12 +343,22 @@ exports.getTaskById = async (req, res) => {
 
 
 
+
+
+
 // exports.updateTask = async (req, res) => {
 //   try {
 //     const { status } = req.body;
-
+//      console.log(req.body,"updatetaskttttttttttttttttttttttttttttttt");
+     
 //     // Find task first
-//     const task = await Task.findById(req.params.id).populate("assignedTo", "name email");
+//     const task = await Task.findById(req.params.id).populate(
+//       "assignedTo",
+//       "name email contactNumber"
+//     );
+//    console.log(task,"taskkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+   
+
 //     if (!task) return res.status(404).json({ error: "Task not found" });
 
 //     const oldStatus = task.status;
@@ -373,35 +367,37 @@ exports.getTaskById = async (req, res) => {
 //     task.set(req.body);
 //     await task.save();
 
-//     // ✅ If status is updated, send notification email
-//     if (status && status !== oldStatus && task.assignedTo?.email) {
+//     // ✅ If status is updated, send WhatsApp notification
+//     if (status && status !== oldStatus && task.assignedTo?.contactNumber) {
 //       try {
-//         const transporter = nodemailer.createTransport({
-//           service: "gmail",
-//           auth: {
-//             user: process.env.SMTP_EMAIL,
-//             pass: process.env.SMTP_PASSWORD,
-//           },
-//         });
+//         const waichatUrl = "https://waichat.com/api/send";
 
-//         const mailOptions = {
-//           from: process.env.SMTP_EMAIL,
-//           to: task.assignedTo.email,
-//           subject: `Task Status Updated: ${task.taskName}`,
-//           html: `
-//             <h2>Hello ${task.assignedTo.name},</h2>
-//             <p>The status of your task has been updated.</p>
-//             <p><strong>Task:</strong> ${task.taskName}</p>
-//             <p><strong>New Status:</strong> ${status}</p>
-//             <br>
-//             <p>Login to your dashboard to view full details.</p>
-//           `,
+//         // Add country code (India: 91)
+//         let contactNumber = task.assignedTo.contactNumber;
+//         if (!contactNumber.startsWith("91")) {
+//           contactNumber = `91${contactNumber}`;
+//         }
+
+//         const waichatPayload = {
+//           number: contactNumber,
+//           type: "text",
+//           message: `⚡ Task Status Updated!\n\n📝 Task: ${
+//             task.taskName
+//           }\n📅 Updated At: ${new Date().toLocaleString()}\n✅ New Status: ${status}\n\nPlease check your dashboard for details.`,
+//           instance_id: "68E0E2878A990", // ✅ Your Instance ID
+//           access_token: "68de6bd371bd8", // ✅ Your Access Token
 //         };
 
-//         await transporter.sendMail(mailOptions);
-//         console.log(`📧 Status update email sent to ${task.assignedTo.email}`);
-//       } catch (emailErr) {
-//         console.error("❌ Failed to send status update email:", emailErr.message);
+//         const response = await axios.post(waichatUrl, waichatPayload, {
+//           headers: { "Content-Type": "application/json" },
+//         });
+
+//         console.log("✅ WhatsApp status update sent:", response.data);
+//       } catch (waErr) {
+//         console.error(
+//           "❌ Failed to send WhatsApp status update:",
+//           waErr.response?.data || waErr.message
+//         );
 //       }
 //     }
 
@@ -412,65 +408,107 @@ exports.getTaskById = async (req, res) => {
 //   }
 // };
 
-
 exports.updateTask = async (req, res) => {
   try {
-    const { status } = req.body;
+    const {
+      taskName,
+      description,
+      scheduledTime,
+      role,
+      assignedTo,
+      assignedBy,
+      status,
+      repeat,
+      company,
+    } = req.body;
 
-    // Find task first
+    console.log(req.body, "📥 Incoming Task Update Payload");
+
+    // ✅ Find existing task
     const task = await Task.findById(req.params.id).populate(
       "assignedTo",
       "name email contactNumber"
     );
-    if (!task) return res.status(404).json({ error: "Task not found" });
+
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
 
     const oldStatus = task.status;
 
-    // Update task fields
-    task.set(req.body);
+    // ✅ Update task fields
+    task.taskName = taskName || task.taskName;
+    task.description = description || task.description;
+    task.scheduledTime = scheduledTime || task.scheduledTime;
+    task.role = role || task.role;
+    task.assignedTo = assignedTo || task.assignedTo;
+    task.assignedBy = assignedBy || task.assignedBy;
+    task.status = status || task.status;
+    task.repeat = repeat || task.repeat;
+    if (company && company.id && company.name) {
+      task.company = { id: company.id, name: company.name };
+    }
+
     await task.save();
 
-    // ✅ If status is updated, send WhatsApp notification
-    if (status && status !== oldStatus && task.assignedTo?.contactNumber) {
-      try {
-        const waichatUrl = "https://waichat.com/api/send";
+    // ✅ Populate references again
+    const updatedTask = await task.populate([
+      { path: "assignedTo", select: "name email contactNumber" },
+      { path: "assignedBy", select: "name email" },
+    ]);
 
-        // Add country code (India: 91)
-        let contactNumber = task.assignedTo.contactNumber;
-        if (!contactNumber.startsWith("91")) {
-          contactNumber = `91${contactNumber}`;
+    console.log("✅ Task updated successfully:", updatedTask);
+
+    // ✅ If assignedTo is changed or new, fetch user details
+    const user = await Staff.findById(task.assignedTo).select("name email contactNumber");
+
+    if (!user) {
+      console.warn("⚠️ Assigned user not found — skipping WhatsApp notification.");
+    } else {
+      // ✅ Send WhatsApp notification if status changed
+      if (status && status !== oldStatus) {
+        try {
+          const waichatUrl = "https://waichat.com/api/send";
+
+          let contactNumber = user.contactNumber;
+          if (!contactNumber.startsWith("91")) {
+            contactNumber = `91${contactNumber}`;
+          }
+
+          const waichatPayload = {
+            number: contactNumber,
+            type: "text",
+            message: `⚡ Task Updated!\n\n📝 Task: ${taskName}\n📄 Description: ${
+              description || "No description"
+            }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n✅ Status: ${
+              status || "pending"
+            }\n🏢 Company: ${
+              company?.name || task.company?.name
+            }\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard for details.`,
+            instance_id: "68E0E2878A990", // ✅ Your Instance ID
+            access_token: "68de6bd371bd8", // ✅ Your Access Token
+          };
+
+          const response = await axios.post(waichatUrl, waichatPayload, {
+            headers: { "Content-Type": "application/json" },
+          });
+
+          console.log("✅ WhatsApp message sent for updated task:", response.data);
+        } catch (waErr) {
+          console.error(
+            "❌ Failed to send WhatsApp update:",
+            waErr.response?.data || waErr.message
+          );
         }
-
-        const waichatPayload = {
-          number: contactNumber,
-          type: "text",
-          message: `⚡ Task Status Updated!\n\n📝 Task: ${
-            task.taskName
-          }\n📅 Updated At: ${new Date().toLocaleString()}\n✅ New Status: ${status}\n\nPlease check your dashboard for details.`,
-          instance_id: "68E0E2878A990", // ✅ Your Instance ID
-          access_token: "68de6bd371bd8", // ✅ Your Access Token
-        };
-
-        const response = await axios.post(waichatUrl, waichatPayload, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        console.log("✅ WhatsApp status update sent:", response.data);
-      } catch (waErr) {
-        console.error(
-          "❌ Failed to send WhatsApp status update:",
-          waErr.response?.data || waErr.message
-        );
       }
     }
 
-    res.json(task);
+    res.status(200).json(updatedTask);
   } catch (err) {
-    console.error("Error updating task:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Error updating task:", err);
+    res.status(500).json({ error: "Failed to update task" });
   }
 };
-
 
 // ✅ Delete task
 exports.deleteTask = async (req, res) => {
@@ -482,10 +520,6 @@ exports.deleteTask = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
-
-
 
 
 exports.getTasksByUser = async (req, res) => {
@@ -602,5 +636,17 @@ exports.getTaskReports = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch task reports" });
   }
 };
-
+// PUT /api/tasks/:id
+// exports.updateTask = async (req, res) => {
+//   try {
+//     const updated = await Task.findByIdAndUpdate(req.params.id, req.body, {
+//       new: true,
+//     });
+//     if (!updated) return res.status(404).json({ message: "Task not found" });
+//     res.status(200).json(updated);
+//   } catch (err) {
+//     console.error("Error updating task:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 

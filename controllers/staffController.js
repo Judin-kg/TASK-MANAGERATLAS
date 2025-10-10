@@ -97,3 +97,26 @@ exports.resetStaffPassword = async (req, res) => {
     res.status(500).json({ message: "Failed to reset password", error: err.message });
   }
 };
+
+// Update staff
+exports.updateStaff = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const updatedStaff = await Staff.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    }).populate("assistantManager", "name");
+
+    if (!updatedStaff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    res.json(updatedStaff);
+  } catch (err) {
+    console.error("Error updating staff:", err);
+    res.status(500).json({ message: "Failed to update staff", error: err.message });
+  }
+};
+
