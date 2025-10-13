@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Auth = require('../models/Admin');
+const Staff = require('../models/User');
 
 // Helper: Generate JWT Token
 const generateToken = (userId) => {
@@ -19,7 +19,7 @@ console.log('Login Request:', req.body);
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const user = await Auth.findOne({ email });
+    const user = await Staff.findOne({ email });
     console.log("user details:",user);
     if (!user) {
       console.log('User not found');

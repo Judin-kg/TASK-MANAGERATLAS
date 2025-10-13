@@ -61,17 +61,23 @@ exports.createTask = async (req, res) => {
 
     await task.save();
 
+    console.log(task, "✅ Task Createddddddddd");
+
     // ✅ Populate references
     const populatedTask = await task.populate([
       { path: "assignedTo", select: "name email contactNumber" },
       { path: "assignedBy", select: "name email" },
     ]);
 
-    console.log(populatedTask, "✅ Task Created & Populated");
+    console.log(populatedTask, "✅ Task Created & Populateddddddddd");
 
     // ✅ Fetch assigned user
     const user = await Staff.findById(assignedTo).select("name email contactNumber");
+
     console.log(user, "👤 Assigned User Details");
+
+    
+    
 
     if (!user) {
       console.warn("⚠️ Assigned user not found, skipping notifications.");
