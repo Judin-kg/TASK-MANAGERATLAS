@@ -428,7 +428,7 @@ exports.updateTask = async (req, res) => {
       company,
     } = req.body;
 
-    console.log(req.body, "📥 Incoming Task Update Payload");
+    console.log(req.body, "📥 Incoming Task Update Payloaddddd");
 
     // ✅ Find existing task
     const task = await Task.findById(req.params.id).populate(
@@ -439,9 +439,16 @@ exports.updateTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({ error: "Task not found" });
     }
+console.log(task,"taskttttttttttttttttttttttttttttttttttttttttttttttt");
 
     const oldStatus = task.status;
-
+    const oldTaskName = task.taskName;
+    const oldDescription = task.description;
+    const oldRole = task.role;
+    const oldAssignedTo = task.assignedTo;
+    const oldRepeat = task.repeat;
+   console.log(oldStatus,"oldstatussssssssssssssssssssssssssssssssssssssssss");
+   
     // ✅ Update task fields
     task.taskName = taskName || task.taskName;
     task.description = description || task.description;
@@ -463,16 +470,27 @@ exports.updateTask = async (req, res) => {
       { path: "assignedBy", select: "name email" },
     ]);
 
-    console.log("✅ Task updated successfully:", updatedTask);
+
+    console.log(updatedTask,"✅ Task updated successfullyyyyyyyyyyyyy:");
 
     // ✅ If assignedTo is changed or new, fetch user details
     const user = await Staff.findById(task.assignedTo).select("name email contactNumber");
+   console.log(user,"userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
 
+   console.log(status,"statussssssssssssssssssssssssssssssssssssss");
+   
+    
+    
     if (!user) {
       console.warn("⚠️ Assigned user not found — skipping WhatsApp notification.");
     } else {
       // ✅ Send WhatsApp notification if status changed
-      if (status && status !== oldStatus) {
+      if ( status !== oldStatus ||
+  taskName !== oldTaskName ||
+  description !== oldDescription ||
+  role !== oldRole ||
+  String(assignedTo) !== String(oldAssignedTo?._id) ||
+  repeat !== oldRepeat) {
         try {
           const waichatUrl = "https://waichat.com/api/send";
 
@@ -488,7 +506,9 @@ exports.updateTask = async (req, res) => {
               description || "No description"
             }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n✅ Status: ${
               status || "pending"
-            }\n🏢 Company: ${
+            }\n📄 repeat: ${
+              repeat || "once"
+            }   \n🏢 Company: ${
               company?.name || task.company?.name
             }\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard for details.`,
             instance_id: "68E0E2878A990", // ✅ Your Instance ID
