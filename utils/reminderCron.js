@@ -3,8 +3,8 @@ const Task = require("../models/Task");
 // const Staff = require("../models/User");
 const axios = require("axios");
 
-// ⏰ Schedule Daily at 9 AM
-cron.schedule("30 10 * * *", async () => {
+// ⏰ Schedule Daily at 7 AM
+cron.schedule("0 7 * * *", async () => {
   console.log("🔔 Running Daily Task Reminder...");
 
   try {
@@ -51,4 +51,9 @@ cron.schedule("30 10 * * *", async () => {
   } catch (err) {
     console.error("❌ Cron Error:", err.message);
   }
-});
+  
+},
+{
+    timezone: "Asia/Kolkata", // ✅ Proper timezone
+}
+);
