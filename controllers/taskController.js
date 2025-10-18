@@ -101,7 +101,7 @@ try {
       description || "No description"
     }\n📅 Scheduled: ${new Date(scheduledTime).toLocaleString()}\n⚡ Status: ${
       status || "pending"
-    }\n🏢 Company: ${company.name}\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard.`,
+    }\n🏢 Company: ${company.name}\n\n🔗 View Task: https://rjatlasai-taskanagement.vercel.app\n\nPlease check your dashboard.`,
     instance_id: "68E0E2878A990", // ✅ Your Instance ID
     access_token: "68de6bd371bd8", // ✅ Your Access Token
   };
@@ -510,7 +510,7 @@ console.log(task,"taskttttttttttttttttttttttttttttttttttttttttttttttt");
               repeat || "once"
             }   \n🏢 Company: ${
               company?.name || task.company?.name
-            }\n\n🔗 View Task: http://rjatlastask-management.vercel.app\n\nPlease check your dashboard for details.`,
+            }\n\n🔗 View Task: https://rjatlasai-taskanagement.vercel.app\n\nPlease check your dashboard for details.`,
             instance_id: "68E0E2878A990", // ✅ Your Instance ID
             access_token: "68de6bd371bd8", // ✅ Your Access Token
           };
