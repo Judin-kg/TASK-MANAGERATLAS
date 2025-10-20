@@ -4,7 +4,7 @@ const Task = require("../models/Task");
 const axios = require("axios");
 
  // ⏰ Schedule Daily at 7 AM
-cron.schedule("0 7 * * *", async () => {
+cron.schedule("0 11 * * *", async () => {
   console.log("🔔 Running Daily Task Reminder...");
 
   try {
