@@ -65,10 +65,17 @@ const cron = require("node-cron");
 const Task = require("../models/Task");
 const axios = require("axios");
 
-// ⏰ Schedule at 06:00 AM UTC (which is 11:30 AM IST)
-cron.schedule("0 6 * * *", async () => {
-  console.log("🔔 Running Daily Task Reminder at 11:30 AM IST (06:00 UTC)...");
 
+// cron.schedule("0 6 * * *", async () => {
+//   console.log("🔔 Running Daily Task Reminder at 11:30 AM IST (06:00 UTC)...");
+
+
+
+  // Runs at 01:30 AM UTC → 07:00 AM IST
+cron.schedule("30 1 * * *", async () => {
+  console.log("🔔 Running Daily Task Reminder at 7:00 AM IST (01:30 UTC)...");
+  
+  
   try {
     const pendingTasks = await Task.find({ status: "pending" })
       .populate("assignedTo", "name contactNumber");
