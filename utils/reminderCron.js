@@ -59,50 +59,38 @@
 
 
 
+ 
+// reminderCron.js
 const cron = require("node-cron");
 const Task = require("../models/Task");
 const axios = require("axios");
 
-// 🧠 Prevent multiple overlapping cron executions
-let isRunning = false;
+// Run cron **only** if this instance is marked as the "primary" worker
+if (process.env.ENABLE_CRON === "true") {
+  cron.schedule("40 6 * * *", async () => {
+    console.log("🔔 Running Daily Task Reminder (10:30 AM IST / 05:00 UTC)...");
+    try {
+      const pendingTasks = await Task.find({ status: "pending" })
+        .populate("assignedTo", "name contactNumber");
+      if (!pendingTasks.length) {
+        console.log("✅ No pending tasks found.");
+        return;
+      }
 
-// 🕙 Runs daily at 11:30 AM IST (05:00 UTC)
-cron.schedule("0 6 * * *", async () => {
-  if (isRunning) {
-    console.log("⚠️ Cron already running, skipping this instance...");
-    return;
-  }
+      for (const task of pendingTasks) {
+        const user = task.assignedTo;
+        if (!user || !user.contactNumber) continue;
 
-  console.log("🔔 Running Daily Task Reminder at 10:30 AM IST (05:00 UTC)...");
-  isRunning = true;
+        const contactNumber = user.contactNumber.startsWith("91")
+          ? user.contactNumber
+          : `91${user.contactNumber}`;
 
-  try {
-    // 🗂️ Fetch all pending tasks
-    const pendingTasks = await Task.find({ status: "pending" })
-      .populate("assignedTo", "name contactNumber");
-
-    if (!pendingTasks.length) {
-      console.log("✅ No pending tasks found.");
-      isRunning = false;
-      return;
-    }
-
-    // 📩 Send WhatsApp reminders
-    for (const task of pendingTasks) {
-      const user = task.assignedTo;
-      if (!user || !user.contactNumber) continue;
-
-      const contactNumber = user.contactNumber.startsWith("91")
-        ? user.contactNumber
-        : `91${user.contactNumber}`;
-
-      const message = `⏰ *Daily Reminder*  
+        const message = `⏰ *Daily Reminder*  
 📝 Task: ${task.taskName}  
 📅 Due: ${new Date(task.scheduledTime).toLocaleDateString()}  
 ⚠️ Status: Pending  
 \nPlease update your task in the portal.`;
 
-      try {
         await axios.post("https://waichat.com/api/send", {
           number: contactNumber,
           type: "text",
@@ -110,23 +98,18 @@ cron.schedule("0 6 * * *", async () => {
           instance_id: "68E0E2878A990",
           access_token: "68de6bd371bd8",
         });
-
         console.log(`✅ Reminder sent to ${user.name}`);
-      } catch (err) {
-        console.error(`❌ Failed to send reminder to ${user?.name}:`, err.message);
       }
+    } catch (err) {
+      console.error("❌ Cron Error:", err.message);
     }
+  }, {
+    timezone: "UTC", // Ensure UTC timezone
+  });
+} else {
+  console.log("⏭️ Skipping cron — ENABLE_CRON is not true");
+}
 
-  } catch (err) {
-    console.error("❌ Cron Error:", err.message);
-  } finally {
-    isRunning = false; // 🔓 Release lock after completion
-  }
-}, {
-  timezone: "UTC", // ⏰ Using UTC (05:00 UTC → 11:30 AM IST)
-});
-
-console.log("🕒 Cron job scheduled for 10:30 AM IST (05:00 UTC).");
 
 
 
